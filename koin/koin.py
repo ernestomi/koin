@@ -31,6 +31,8 @@ class Koin():
   return self.__post(path='/orders', data=order)
 
  def place_limit_order(self, **kwargs):
+  #Validate required parameters
+  self.__validate_arguments(kwargs, ['product_id','size','price','side'])
   order = {
    'size': kwargs['size'],
    'price': kwargs['price'],
@@ -38,6 +40,25 @@ class Koin():
    'side': kwargs['side'],
    'product_id': kwargs['product_id'],
   }
+  #Validate optional parameters
+  if 'time_in_force' in kwargs:
+   order['time_in_force'] = kwargs['time_in_force']
+   if kwargs['time_in_force'] == 'GTT':
+    if 'cancel_after' not in kwargs:
+     raise KeyError('You must supply cancel_after with a GTT order')
+    elif kwargs['cancel_after'] not in ['min','hour','day']:
+     raise ValueError("Only 'min', 'hour' or 'day' possible as cancel_after")
+    else:
+     order['cancel_after'] = kwargs['cancel_after']
+   elif kwargs['time_in_force'] not in ['GTC','IOC','FOK']:
+    raise ValueError(
+     "Only 'GTC', 'GTT', 'IOC' or 'FOK' possible as time_in_force")
+  if 'post_only' in kwargs:
+   if type(kwargs['post_only']) not bool:
+    raise ValueError('post_only must be boolean')
+   else:
+    order['post_only'] = 'True' if kwargs['post_only'] else 'False'
+  #Execute
   return self.__post(path='/orders', data=order)
 
  def candles(self, **kwargs):
@@ -49,6 +70,18 @@ class Koin():
     parameters['granularity'] = kwargs['granularity']
    else:
     raise ValueError('Granularity must be one of ' + str(granularities))
+  if 'start' in kwargs:
+   if 'end' in kwargs:
+    if type(kwargs['start']) == int and type(kwargs['end']) == int:
+     order['start'] = kwargs['start']
+     order['end'] = kwargs['end']
+    elif:
+     raise ValueError('start and end must be integers')
+   else:
+    raise KeyError('end is needed when start is supplied')
+  elif 'end' in kwargs:
+   raise KeyError('start is needed when end is supplied')
+
   results = self.__get(path=path, parameters=parameters)
   #Convert to list of dictionaries
   from datetime import datetime, timezone
@@ -106,7 +139,6 @@ class Koin():
    'CB-ACCESS-PASSPHRASE':self.passphrase
   }
 
-
  def __get_signature(self, timestamp, path, body, method):
   import base64, hmac, hashlib, json
   message = timestamp + method + path + body
@@ -128,3 +160,8 @@ class Koin():
   self.passphrase = credentials['passphrase']
   self.key = credentials['key']
   self.secret = credentials['secret']
+
+ def __validate_arguments(self, supplied_arguments, required_arguments):
+  for r in required_arguments:
+   if r not in supplied_arguments:
+    raise KeyError('You must supply {}'.format(r))

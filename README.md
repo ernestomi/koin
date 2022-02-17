@@ -2,9 +2,11 @@
 
 A simple library for interacting with the Coinbase Pro API.
 
-It was born out of the need to programmatically monitor and trade on Coinbase Pro and it is slowly being developed to cover all of the endpoints supported. __It is NOT a library for the regular Coinbase product, this is only for Coinbase Pro.__
+It was born out of the need to programmatically monitor and trade on Coinbase Pro and it is slowly being developed to cover all of the endpoints supported. The library is currently in Alpha version, which means I am still testing and modifying heavily, I will make my best effort to keep things as stable as possible, but expect features and interfaces to change.
 
 The MIT license is quite straightforward, but I just want to reiterate that this software is provided AS IS with no __warranty__. Obviously automating trading can be dangerous for your pocket, but it is up to you to use this library wisely!
+
+__It is NOT a library for the regular Coinbase product, this is only for Coinbase Pro.__
 
 ## Authentication
 
@@ -63,10 +65,18 @@ For more information about how trading works, consult the Coinbase Pro documenta
 
 |Keyword argument|Required|Values|Description|
 |---|---|---|---|
-|`product_id`|Yes|e.g `'BTC-USD'`|The currency pair you want to trade|
-|`side`|Yes|`'sell'` or `'buy'`|Is it a buy or sell order|
+|`product_id`|Yes|e.g `'BTC-USD'`|The currency pair you want to trade (base currency - quote currency)|
+|`side`|Yes|`'sell'` or `'buy'`|Do you want to buy or sell the base currency|
 |`size`|No|`0.5`|The ammount of the base currency you want to trade. You must specify either `size` or `funds`|
-|`size`|No|`0.5`|The ammount of the quote currency you want to use. You must specify either `size` or `funds`|
+|`funds`|No|`58.7`|The ammount of the quote currency you want to use. You must specify either `size` or `funds`|
+
+```python
+k.place_market_order(
+ product_id = 'ETH-USD',
+ side = 'buy',
+ size = 0.1
+)
+```
 
 ### Limit Order
 
@@ -82,6 +92,15 @@ Create a limit order which is executed if and when the `price` you specify is re
 |`cancel_after`|No|`'min'`, `'hour'` or `'day'`|Required when the order is `'GTC'`. This is the ammount of time after which the order is cancelled if not filled|
 |`post_only`|No|`'True'` or `'False'`|Post Only is a flag to ensure your limit order is posted to the order book and is not immediatelly fileld|
 
+```python
+k.place_limit_order(
+ product_id = 'ETH-USD',
+ side = 'buy',
+ price = 2000,
+ size = 0.1
+)
+```
+
 ### Candles
 
 Get historical rates for a product.
@@ -94,4 +113,10 @@ Get historical rates for a product.
 |`end`|No|e.g `1629331200`|The end time (in epoch) for the period you want to query|
 
 
-
+```python
+k.candles(
+ product_id = 'ETH-USD',
+ side = 'buy',
+ price = 2000,
+ size = 0.1
+)
