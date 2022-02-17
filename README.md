@@ -116,7 +116,5 @@ Get historical rates for a product.
 ```python
 k.candles(
  product_id = 'ETH-USD',
- side = 'buy',
- price = 2000,
- size = 0.1
+ granularity = 900
 )
